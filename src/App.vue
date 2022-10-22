@@ -1,21 +1,20 @@
 <template>
   
-  <div class="container ">
+  <div class="container flex flex-col">
 
-    <div class="h-full">
+    <div class="h-96">
       <ol class="list-decimal">
-        <li  v-for="fruit in pages" :key="fruit.id">
+        <li  v-for="fruit, index in pages" :key="fruit.id">
           {{ fruit.name }}
           <ul class="list-disc mx-5">
             <li>{{fruit.id}}$</li>
-            <li>{{fruit.color}}$</li>
             <li>{{fruit.count}}</li>
           </ul> 
         </li>
       </ol>
     </div>
   
-    <div class="">
+    <div class="block">
       <button 
         type="button" 
         class="border-2 rounded-lg">
@@ -26,7 +25,7 @@
         type="button" 
         class="border-2 rounded-lg"
         v-for="pageNumber in totalPages()"
-        @click="getPage(pageNumber)"
+        v-on:click="paginate(pageNumber)"
         :key="pageNumber">
         {{ pageNumber }}
       </button>
@@ -48,33 +47,34 @@
     export default {
       data () {
         return {
-          list: fruits,
+          fruits: [],
           page: 1,
-          pageSize: 5,
+          eachPages: 5,
           pages: [],
         };
       },
       created() {
          this.getTrees();
-      }, 
+      },
       methods: {
         async getTrees() {
-          await axios.get('https://www.fruitmap.org/api/trees').then((res) => {
-            this.list = res.data;
-          })
-          .catch(e => console.log(e));
+          const res = await axios.get('https://www.fruitmap.org/api/trees');
+          this.fruits = res.data;
         },
         totalPages() {
-          return Math.ceil(this.fruits.length / this.pageSize); // 
+          return Math.ceil(this.fruits.length / this.eachPages); // 
         },
-        getPage(pageNumber) {
-          let pageSize = this.pageSize;
-          let start = (pageNumber * pageSize) - pageSize; // (1 * 5) - 5 -> 0
-          let end = (pageNumber * pageSize); // (1 * 5) -> 5
-          return fruits.slice(start, end) // show 0 - 5 elements with slice
+        paginate(currentPage) {
+          let start = (currentPage * this.eachPages) - this.eachPages; // (1 * 5) - 5 -> 0
+          let end = (currentPage * this.eachPages); // (1 * 5) -> 5
+          this.pages = this.fruits.slice(start, end) // show 0 - 5 elements with slice
         },
       },
-      
+      watch: {
+        fruits() {
+          this.paginate(1);
+        }
+      },
     }
 
   </script>
